@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VCollab - Furniture & Home Appliance Rental Marketplace</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandYellow: '#FFD23F',
+                        brandLightYellow: '#FFF6D6',
+                        brandTeal: '#005C53',
+                        brandDarkTeal: '#042927'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+
+    <!-- 1. TOP ANNOUNCEMENT BAR -->
+    <div class="bg-brandLightYellow text-gray-800 text-xs md:text-sm font-semibold py-2 text-center border-b border-yellow-200">
+        📢 Free delivery and installation on every rental!
+    </div>
+
+    <!-- 2. MAIN HEADER / NAVIGATION BAR -->
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+            
+            <!-- Logo & Brand Name -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchRole('new_customer')">
+                <div class="w-10 h-10 rounded-full bg-brandDarkTeal flex items-center justify-center text-white font-bold text-lg shadow">
+                    <span class="text-brandYellow">V</span>C
+                </div>
+                <span class="text-2xl font-bold text-gray-900 tracking-tight">VCollab</span>
+            </div>
+
+            <!-- City Location Dropdown -->
+            <div class="flex items-center space-x-2 bg-gray-100 px-3 py-2 rounded-lg border border-gray-200">
+                <i class="fa-solid fa-location-dot text-brandTeal"></i>
+                <select id="city-select" onchange="changeCity(this.value)" class="bg-transparent text-sm font-medium focus:outline-none cursor-pointer">
+                    <option value="Delhi">Delhi (Sharma Furnitures)</option>
+                    <option value="Mumbai">Mumbai (Metro Living)</option>
+                    <option value="Hyderabad" selected>Hyderabad (Urban Living Store)</option>
+                    <option value="Bangalore">Bangalore (Garden City Hub)</option>
+                    <option value="Chennai">Chennai (South Coast Comforts)</option>
+                    <option value="Kolkata">Kolkata (Bengal Comforts)</option>
+                </select>
+            </div>
+
+            <!-- Interactive Real-Time Search Bar -->
+            <div class="flex-1 max-w-md min-w-[250px] relative">
+                <input type="text" id="search-input" onkeyup="handleSearch()" placeholder="Search sofas, beds, fridges, washing machines..." 
+                       class="w-full bg-gray-100 text-sm pl-4 pr-10 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brandYellow">
+                <button class="absolute right-1 top-1/2 -translate-y-1/2 bg-brandYellow hover:bg-yellow-400 p-2 rounded-full w-8 h-8 flex items-center justify-center">
+                    <i class="fa-solid fa-magnifying-glass text-gray-800 text-xs"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Icons & Actions -->
+            <div class="flex items-center space-x-3 text-gray-700">
+                
+                <!-- Existing Customer Specific Icons (Hidden in New Customer mode) -->
+                <button id="nav-my-orders" onclick="openMyOrdersModal()" class="hidden flex items-center space-x-1.5 hover:text-brandTeal font-medium text-sm bg-yellow-100 px-3 py-1.5 rounded-lg border border-yellow-300 transition">
+                    <i class="fa-solid fa-box-archive text-brandTeal"></i>
+                    <span>My Orders</span>
+                </button>
+
+                <button id="nav-relocate" onclick="scrollToRelocationSection()" class="hidden flex items-center space-x-1.5 hover:text-brandTeal font-medium text-sm bg-teal-50 px-3 py-1.5 rounded-lg border border-teal-200 text-brandTeal transition">
+                    <i class="fa-solid fa-truck-ramp-box"></i>
+                    <span>Relocate</span>
+                </button>
+
+                <!-- Profile Modal Trigger -->
+                <button onclick="openProfileModal()" class="hover:text-brandTeal p-2" title="Customer Profile">
+                    <i class="fa-regular fa-user text-xl"></i>
+                </button>
+
+                <!-- Wishlist Icon -->
+                <button class="hover:text-red-500 relative p-2" title="Wishlist">
+                    <i class="fa-regular fa-heart text-xl"></i>
+                    <span id="wishlist-count" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+                </button>
+
+                <!-- Cart Icon -->
+                <button onclick="openCheckoutModal()" class="hover:text-brandTeal relative p-2" title="Cart">
+                    <i class="fa-solid fa-cart-shopping text-xl"></i>
+                    <span id="cart-count" class="absolute top-0 right-0 bg-brandYellow text-gray-900 text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 3. FIVE-ROLE INTERFACE VIEW SWITCHER (THE SHIFTER) -->
+    <nav class="bg-gray-900 text-white py-2.5 px-4 shadow-inner sticky top-[61px] z-30">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between text-xs md:text-sm gap-2">
+            <span class="text-gray-400 font-semibold uppercase tracking-wider text-[11px] flex items-center space-x-1">
+                <i class="fa-solid fa-sliders text-brandYellow"></i>
+                <span>Demo Role Switcher:</span>
+            </span>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="switchRole('new_customer')" id="role-btn-new" class="px-3.5 py-1 rounded-full bg-brandYellow text-gray-900 font-bold shadow transition">1. New Customer</button>
+                <button onclick="switchRole('shreya')" id="role-btn-shreya" class="px-3.5 py-1 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 transition">2. Existing Customer (Shreya)</button>
+                <button onclick="switchRole('retailer')" id="role-btn-retailer" class="px-3.5 py-1 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 transition">3. Retailer View</button>
+                <button onclick="switchRole('logistics')" id="role-btn-logistics" class="px-3.5 py-1 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 transition">4. Logistics Partner View</button>
+                <button onclick="switchRole('admin')" id="role-btn-admin" class="px-3.5 py-1 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 transition">5. Admin View</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ==================== CUSTOMER VIEW (NEW & EXISTING SHREYA) ==================== -->
+    <main id="view-customer" class="max-w-7xl mx-auto px-4 py-6 space-y-8">
+
+        <!-- Category Strip -->
+        <div class="flex items-center justify-between overflow-x-auto pb-2 gap-4 no-scrollbar">
+            <button onclick="filterCategory('all')" class="flex flex-col items-center min-w-[70px] space-y-2 group">
+                <div class="w-14 h-14 rounded-full bg-brandLightYellow group-hover:bg-brandYellow flex items-center justify-center border border-yellow-300 transition shadow-sm">
+                    <i class="fa-solid fa-border-all text-xl text-brandTeal"></i>
+                </div>
+                <span class="text-xs font-semibold">All</span>
+            </button>
+            <button onclick="filterCategory('Living')" class="flex flex-col items-center min-w-[70px] space-y-2 group">
+                <div class="w-14 h-14 rounded-full bg-gray-100 group-hover:bg-brandYellow flex items-center justify-center border border-gray-200 transition shadow-sm">
+                    <i class="fa-solid fa-couch text-xl text-gray-700"></i>
+                </div>
+                <span class="text-xs font-semibold">Living</span>
+            </button>
+            <button onclick="filterCategory('Bedroom')" class="flex flex-col items-center min-w-[70px] space-y-2 group">
+                <div class="w-14 h-14 rounded-full bg-gray-100 group-hover:bg-brandYellow flex items-center justify-center border border-gray-200 transition shadow-sm">
+                    <i class="fa-solid fa-bed text-xl text-gray-700"></i>
+                </div>
+                <span class="text-xs font-semibold">Bedroom</span>
+            </button>
+            <button onclick="filterCategory('Fridges')" class="flex flex-col items-center min-w-[70px] space-y-2 group">
+                <div class="w-14 h-14 rounded-full bg-gray-100 group-hover:bg-brandYellow flex items-center justify-center border border-gray-200 transition shadow-sm">
+                    <i class="fa-solid fa-snowflake text-xl text-gray-700"></i>
+                </div>
+                <span class="text-xs font-semibold">Fridges</span>
+            </button>
+            <button onclick="filterCategory('Washers')" class="flex flex-col items-center min-w-[70px] space-y-2 group">
+                <div class="w-14 h-14 rounded-full bg-gray-100 group-hover:bg-brandYellow flex items-center justify-center border border-gray-200 transition shadow-sm">
+                    <i class="fa-solid fa-soap text-xl text-gray-700"></i>
+                </div>
+                <span class="text-xs font-semibold">Washers</span>
+            </button>
+            <button onclick="filterCategory('ACs')" class="flex flex-col items-center min-w-[70px] space-y-2 group">
+                <div class="w-14 h-14 rounded-full bg-gray-100 group-hover:bg-brandYellow flex items-center justify-center border border-gray-200 transition shadow-sm">
+                    <i class="fa-solid fa-wind text-xl text-gray-700"></i>
+                </div>
+                <span class="text-xs font-semibold">ACs</span>
+            </button>
+            <button onclick="filterCategory('TVs')" class="flex flex-col items-center min-w-[70px] space-y-2 group">
+                <div class="w-14 h-14 rounded-full bg-gray-100 group-hover:bg-brandYellow flex items-center justify-center border border-gray-200 transition shadow-sm">
+                    <i class="fa-solid fa-tv text-xl text-gray-700"></i>
+                </div>
+                <span class="text-xs font-semibold">TVs</span>
+            </button>
+        </div>
+
+        <!-- Hero Carousel Banner -->
+        <div class="relative w-full h-64 md:h-80 rounded-2xl overflow-hidden bg-gradient-to-r from-gray-900 via-gray-800 to-brandDarkTeal text-white shadow-lg">
+            <div id="carousel-slide" class="absolute inset-0 flex flex-col justify-center px-8 md:px-16 space-y-4 bg-black/40 backdrop-blur-[1px]">
+                <span class="bg-brandYellow text-gray-900 text-xs font-bold px-3 py-1 rounded-full w-max uppercase tracking-wider shadow">Featured Rental Collection</span>
+                <h2 id="carousel-title" class="text-2xl md:text-4xl font-extrabold tracking-tight">Upgrade Your Living Space Effortlessly</h2>
+                <p id="carousel-subtitle" class="text-gray-200 text-sm md:text-base max-w-xl leading-relaxed">Rent top-rated furniture & smart appliances with zero maintenance worries and free installation.</p>
+                <button onclick="scrollToCatalog()" class="bg-brandYellow hover:bg-yellow-400 text-gray-900 font-bold px-6 py-2.5 rounded-xl w-max shadow-md transition">Explore Products</button>
+            </div>
+        </div>
+
+        <!-- Relocate Awareness Banner (New Customer) / Interactive Calculator (Existing Customer) -->
+        <section id="relocation-section" class="bg-gradient-to-r from-teal-800 to-brandTeal rounded-2xl p-6 text-white shadow-md transition-all">
+            
+            <!-- Awareness View (For New Customers) -->
+            <div id="relocate-awareness-box" class="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="space-y-2">
+                    <div class="flex items-center space-x-2 text-brandYellow font-bold uppercase text-xs tracking-wider">
+                        <i class="fa-solid fa-truck-fast"></i>
+                        <span>Seamless Intracity Service</span>
+                    </div>
+                    <h3 class="text-2xl font-bold">Relocate with VCollab</h3>
+                    <p class="text-teal-100 text-sm max-w-2xl leading-relaxed">
+                        Moving houses within the same city? Shift your rented furniture & home appliances seamlessly without penalty! We handle packing, transit, and reinstallation so you don't have to worry.
+                    </p>
+                </div>
+                <button onclick="openRelocationInfoModal()" class="bg-brandYellow hover:bg-yellow-400 text-gray-900 font-bold px-5 py-3 rounded-xl whitespace-nowrap shadow transition text-sm">
+                    Learn How It Works
+                </button>
+            </div>
+
+            <!-- Fully Interactive Relocation Calculator (For Existing Customer Shreya) -->
+            <div id="relocate-interactive-box" class="hidden space-y-6">
+                <div>
+                    <h3 class="text-2xl font-bold text-white">Relocate with VCollab</h3>
+                    <p class="text-teal-100 text-sm">Moving houses in the same city? Shift your rented furniture & appliances seamlessly without penalty.</p>
+                </div>
+
+                <div class="bg-white text-gray-800 p-6 rounded-xl space-y-4 shadow">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Select Product to Relocate</label>
+                        <select id="relocate-product-select" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm font-medium focus:ring-2 focus:ring-brandTeal outline-none">
+                            <option value="Teak Finish Queen Storage Bed">Teak Finish Queen Storage Bed (Hyderabad)</option>
+                            <option value="LG Double Door Refrigerator">LG Double Door Refrigerator (Hyderabad)</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Current Address Locality</label>
+                            <input type="text" id="relocate-current-addr" value="Gachibowli, Hyderabad" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brandTeal">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Destination Relocation Locality</label>
+                            <input type="text" id="relocate-dest-addr" value="Hitech City, Hyderabad" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-brandTeal">
+                        </div>
+                    </div>
+
+                    <!-- Fee Breakup Container -->
+                    <div class="bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-3">
+                        <h4 class="font-bold text-sm text-gray-900">Transparent Logistics Fee Breakup:</h4>
+                        <div class="flex justify-between text-sm">
+                            <span>Base Transit & Packing Fee (Compulsory)</span>
+                            <span class="font-bold">₹700</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm border-t border-amber-200/60 pt-2">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="reinstall-checkbox" onchange="calculateRelocationFee()" class="w-4 h-4 text-brandTeal rounded">
+                                <span class="font-medium">Appliance Reinstallation (AC / Washing Machine / TV)</span>
+                            </label>
+                            <span id="reinstall-cost-display" class="font-bold text-gray-500">₹0 (Skipped)</span>
+                        </div>
+
+                        <div class="border-t border-amber-300 pt-3 flex justify-between items-center">
+                            <span class="font-bold text-gray-900">Total Relocation Service Fee</span>
+                            <span id="total-relocation-fee" class="text-xl font-extrabold text-brandTeal">₹700</span>
+                        </div>
+
+                        <div class="text-xs space-y-1 text-gray-600 bg-white p-2.5 rounded-lg border border-amber-200">
+                            <div class="flex justify-between">
+                                <span class="text-emerald-700 font-bold">• 60% Advance Payment Required</span>
+                                <span id="advance-fee-display" class="font-bold text-emerald-700">₹420</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>• 40% Balance Payable After Relocation</span>
+                                <span id="balance-fee-display" class="font-bold">₹280</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="openRelocationSlotModal()" class="w-full bg-brandTeal hover:bg-teal-900 text-white font-bold py-3 rounded-xl shadow transition">
+                        Schedule Relocation Shift
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Product Portfolio Grid -->
+        <section id="catalog-section" class="space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 id="catalog-city-title" class="text-xl font-bold text-gray-900">Available Rentals in Hyderabad</h3>
+                <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full border border-gray-200">Verified Local Store Listings</span>
+            </div>
+
+            <!-- Dynamic Product Grid -->
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- JavaScript will dynamically inject city product cards here -->
+            </div>
+        </section>
+    </main>
+
+
+    <!-- ==================== RETAILER DASHBOARD ==================== -->
+    <main id="view-retailer" class="hidden max-w-7xl mx-auto px-4 py-8 space-y-6">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 flex flex-wrap justify-between items-center gap-4">
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h2 id="retailer-shop-name" class="text-2xl font-bold">Urban Living Store</h2>
+                    <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-0.5 rounded-full">Verified Retailer</span>
+                </div>
+                <p id="retailer-store-id" class="text-xs text-gray-500 mt-1">Store ID #RT1024 | Location: Hyderabad</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-right">
+                    <span class="text-xs text-gray-500 block">Available Balance</span>
+                    <span class="text-xl font-extrabold text-brandTeal">₹24,850</span>
+                </div>
+                <button onclick="openAddProductModal()" class="bg-brandYellow hover:bg-yellow-400 text-gray-900 font-bold px-4 py-2.5 rounded-xl shadow text-sm transition">
+                    + Add Product
+                </button>
+            </div>
+        </div>
+
+        <!-- KPI Metric Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                <span class="text-xs font-bold uppercase text-gray-400">Total Listings</span>
+                <span class="text-2xl font-extrabold text-gray-900 block mt-1">120</span>
+                <span class="text-[11px] text-gray-500">Products registered</span>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                <span class="text-xs font-bold uppercase text-gray-400">Available Stock</span>
+                <span class="text-2xl font-extrabold text-emerald-600 block mt-1">65</span>
+                <span class="text-[11px] text-gray-500">Ready for rental</span>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                <span class="text-xs font-bold uppercase text-gray-400">Currently Rented</span>
+                <span class="text-2xl font-extrabold text-blue-600 block mt-1">42</span>
+                <span class="text-[11px] text-gray-500">Active rental units</span>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                <span class="text-xs font-bold uppercase text-gray-400">Idle / Pending</span>
+                <span class="text-2xl font-extrabold text-amber-500 block mt-1">13</span>
+                <span class="text-[11px] text-gray-500">Needs review or action</span>
+            </div>
+        </div>
+    </main>
+
+
+    <!-- ==================== LOGISTICS PARTNER DASHBOARD ==================== -->
+    <main id="view-logistics" class="hidden max-w-7xl mx-auto px-4 py-8 space-y-6">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 flex justify-between items-center flex-wrap gap-4">
+            <div>
+                <h2 class="text-2xl font-bold">Express Relocations Co. Dashboard</h2>
+                <p class="text-xs text-gray-500 mt-1">Active Logistics Dispatch & Intracity Shift Tasks</p>
+            </div>
+            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">5 Active Fleet Vans</span>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+            <div class="p-4 bg-gray-50 border-b border-gray-200 font-bold text-sm text-gray-700 flex justify-between items-center">
+                <span>Assigned Tasks Queue</span>
+                <span class="text-xs text-gray-500">Real-time update</span>
+            </div>
+            <div class="p-4 space-y-4">
+                <div class="p-4 rounded-xl border border-teal-200 bg-teal-50/40 flex flex-wrap justify-between items-center gap-4">
+                    <div class="space-y-1">
+                        <span class="bg-brandTeal text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">Relocation Shift</span>
+                        <h4 class="font-bold text-sm text-gray-900">Teak Finish Queen Storage Bed</h4>
+                        <p class="text-xs text-gray-600"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i>From: Gachibowli $\rightarrow$ To: Hitech City, Hyderabad</p>
+                        <p class="text-xs text-emerald-700 font-bold"><i class="fa-solid fa-indian-rupee-sign mr-1"></i>Collect 40% Balance on Delivery: ₹280</p>
+                    </div>
+                    <button class="bg-brandTeal hover:bg-teal-900 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition">Mark In-Transit</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+    <!-- ==================== ADMIN DASHBOARD ==================== -->
+    <main id="view-admin" class="hidden max-w-7xl mx-auto px-4 py-8 space-y-6">
+        <div class="bg-gray-900 text-white rounded-2xl p-6 shadow-lg space-y-2">
+            <h2 class="text-2xl font-bold">Platform Admin Control Center</h2>
+            <p class="text-xs text-gray-400">Master Operations Oversight & Commission Earnings</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
+                    <span class="text-xs text-gray-400 uppercase font-semibold">Total Gross Platform Revenue</span>
+                    <span class="text-xl font-bold text-brandYellow block mt-1">₹3,45,000</span>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
+                    <span class="text-xs text-gray-400 uppercase font-semibold">Total Platform Commission (Avg 15%)</span>
+                    <span class="text-xl font-bold text-emerald-400 block mt-1">₹51,750</span>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-xl border border-gray-700">
+                    <span class="text-xs text-gray-400 uppercase font-semibold">Total System Idle Stock</span>
+                    <span class="text-xl font-bold text-amber-400 block mt-1">48 Units</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6-City Retailer Master Table -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+            <div class="p-4 bg-gray-50 border-b border-gray-200 font-bold text-sm text-gray-700">6 Metro Cities Retailer Master Table</div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-gray-100 uppercase text-gray-600 border-b border-gray-200">
+                        <tr>
+                            <th class="p-3">City</th>
+                            <th class="p-3">Retailer Shop Name</th>
+                            <th class="p-3">Listings</th>
+                            <th class="p-3">Rented</th>
+                            <th class="p-3">Idle</th>
+                            <th class="p-3">Commission Earned</th>
+                            <th class="p-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3 font-bold">Delhi</td>
+                            <td class="p-3">Sharma Furnitures</td>
+                            <td class="p-3">20</td>
+                            <td class="p-3 text-emerald-600 font-bold">14</td>
+                            <td class="p-3 text-amber-600 font-bold">6</td>
+                            <td class="p-3">15% (₹6,300)</td>
+                            <td class="p-3"><button class="bg-red-500 hover:bg-red-600 text-white px-2.5 py-1 rounded text-[10px] font-bold shadow-sm">Blacklist</button></td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3 font-bold">Mumbai</td>
+                            <td class="p-3">Metro Living Rentals</td>
+                            <td class="p-3">25</td>
+                            <td class="p-3 text-emerald-600 font-bold">18</td>
+                            <td class="p-3 text-amber-600 font-bold">7</td>
+                            <td class="p-3">15% (₹8,100)</td>
+                            <td class="p-3"><button class="bg-red-500 hover:bg-red-600 text-white px-2.5 py-1 rounded text-[10px] font-bold shadow-sm">Blacklist</button></td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3 font-bold">Hyderabad</td>
+                            <td class="p-3">Urban Living Store</td>
+                            <td class="p-3">120</td>
+                            <td class="p-3 text-emerald-600 font-bold">42</td>
+                            <td class="p-3 text-amber-600 font-bold">13</td>
+                            <td class="p-3">15% (₹7,200)</td>
+                            <td class="p-3"><button class="bg-red-500 hover:bg-red-600 text-white px-2.5 py-1 rounded text-[10px] font-bold shadow-sm">Blacklist</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+
+    <!-- ==================== PERSISTENT HELP & SUPPORT FLOATING BOT ==================== -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button onclick="toggleHelpModal()" class="bg-brandTeal hover:bg-teal-900 text-white p-4 rounded-full shadow-2xl flex items-center justify-center space-x-2 transition transform hover:scale-105">
+            <i class="fa-solid fa-headset text-xl"></i>
+            <span class="text-xs font-bold pr-1">Help & Support</span>
+        </button>
+    </div>
+
+
+    <!-- ==================== PRE-CONFIGURED ISOLATED MODAL CONTAINERS ==================== -->
+    
+    <!-- 1. CHECKOUT & BUYING MODAL CONTAINER -->
+    <div id="checkout-modal-container"></div>
+
+    <!-- 2. RELOCATION SLOT PICKER & PAYMENT MODAL CONTAINER -->
+    <div id="relocation-modal-container"></div>
+
+    <!-- 3. MY ORDERS & RETURN MODAL CONTAINER -->
+    <div id="my-orders-modal-container"></div>
+
+    <!-- 4. PROFILE MODAL CONTAINER -->
+    <div id="profile-modal-container"></div>
+
+    <!-- 5. HELP & SUPPORT MODAL CONTAINER -->
+    <div id="help-modal-container"></div>
+
+    <!-- 6. RETAILER ADD PRODUCT MODAL CONTAINER -->
+    <div id="add-product-modal-container"></div>
+
+    <!-- Main JavaScript Application File -->
+    <script src="app.js"></script>
+</body>
+</html>
